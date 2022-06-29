@@ -67,6 +67,7 @@ function M.get_options(config, ngx)
     logout_path = config.logout_path,
     redirect_after_logout_uri = config.redirect_after_logout_uri,
     revoke_tokens_on_logout = config.revoke_tokens_on_logout == "yes",
+    post_logout_redirect_uri = config.post_logout_redirect_uri,
     unauth_action = config.unauth_action,
     userinfo_header_name = config.userinfo_header_name,
     id_token_header_name = config.id_token_header_name,
