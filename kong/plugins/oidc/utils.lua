@@ -66,6 +66,7 @@ function M.get_options(config, ngx)
     filters = parseFilters((config.filters or "") .. "," .. (config.ignore_auth_filters or "")),
     logout_path = config.logout_path,
     redirect_after_logout_uri = config.redirect_after_logout_uri,
+    revoke_tokens_on_logout = config.revoke_tokens_on_logout == "yes",
     unauth_action = config.unauth_action,
     userinfo_header_name = config.userinfo_header_name,
     id_token_header_name = config.id_token_header_name,
