@@ -105,9 +105,9 @@ function make_oidc(oidcConfig)
   local res, err = openidc.authenticate(oidcConfig, ngx.var.request_uri, unauth_action, session_opts)
 
   if not err and res then
-    local last_timestamp_modified = expiryStore["renewal_" .. res.id_token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']]
+    local last_timestamp_modified = expiryStore["renewal_" .. res.access_token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']]
 
-    if last_timestamp_modified > res.id_token.iat then
+    if last_timestamp_modified > res.access_token.iat then
       res, err = openidc.force_renew(oidcConfig, session_opts)
     end
   end
