@@ -134,7 +134,7 @@ function make_oidc(oidcConfig)
     if subject then
       local last_timestamp_modified = expiryStore["renewal_" .. subject]
 
-      if last_timestamp_modified and last_timestamp_modified > res.id_token.iat then
+      if last_timestamp_modified and tonumber(last_timestamp_modified) > tonumber(res.id_token.iat) then
         res, err = openidc.force_renew(oidcConfig, session_opts)
       end
     end
