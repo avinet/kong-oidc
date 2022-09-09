@@ -4,6 +4,9 @@ local utils = require("kong.plugins.oidc.utils")
 local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
 
+local shared = ngx.shared
+local expiryStore = shared['sessions']
+
 OidcHandler.PRIORITY = 1000
 
 
@@ -97,7 +100,21 @@ function make_oidc(oidcConfig)
     -- constant for resty.oidc library
     unauth_action = "deny"
   end
-  local res, err = require("resty.openidc").authenticate(oidcConfig, ngx.var.request_uri, unauth_action)
+  local openidc = require("resty.openidc")
+  local session_opts = { storage = oidcConfig.resty_session_storage, strategy = "regenerate", shm = { uselocking = false } }
+  local res, err = openidc.authenticate(oidcConfig, ngx.var.request_uri, unauth_action, session_opts)
+
+  if not err and res then
+    local subject = res.id_token["sub"]
+    if subject then
+      local last_timestamp_modified = expiryStore["renewal_" .. subject]
+
+      if last_timestamp_modified and tonumber(last_timestamp_modified) > tonumber(res.id_token.iat) then
+    	  ngx.log(ngx.DEBUG, "Forced renewal of token for user: " .. subject)
+        res, err = openidc.force_renew(oidcConfig, session_opts)
+      end
+    end
+  end
 
   if err then
     if err == 'unauthorized request' then
@@ -110,6 +127,7 @@ function make_oidc(oidcConfig)
       return kong.response.error(ngx.HTTP_INTERNAL_SERVER_ERROR)
     end
   end
+
   return res
 end
 
