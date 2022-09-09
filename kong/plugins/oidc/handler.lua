@@ -93,6 +93,31 @@ function handle(oidcConfig)
   end
 end
 
+local function table_to_string(tbl)
+  local result = "{"
+  for k, v in pairs(tbl) do
+      -- Check the key type (ignore any numerical keys - assume its an array)
+      if type(k) == "string" then
+          result = result.."[\""..k.."\"]".."="
+      end
+
+      -- Check the value type
+      if type(v) == "table" then
+          result = result..table_to_string(v)
+      elseif type(v) == "boolean" then
+          result = result..tostring(v)
+      else
+          result = result.."\""..v.."\""
+      end
+      result = result..","
+  end
+  -- Remove leading commas from the result
+  if result ~= "{" then
+      result = result:sub(1, result:len()-1)
+  end
+  return result.."}"
+end
+
 function make_oidc(oidcConfig)
   ngx.log(ngx.DEBUG, "OidcHandler calling authenticate, requested path: " .. ngx.var.request_uri)
   local unauth_action = oidcConfig.unauth_action
@@ -105,6 +130,8 @@ function make_oidc(oidcConfig)
   local res, err = openidc.authenticate(oidcConfig, ngx.var.request_uri, unauth_action, session_opts)
 
   if not err and res then
+    ngx.log(ngx.DEBUG, "Checking renewal on token: " .. table_to_string(res.access_token))
+
     local last_timestamp_modified = expiryStore["renewal_" .. res.access_token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']]
 
     if last_timestamp_modified > res.access_token.iat then
