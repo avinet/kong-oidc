@@ -130,7 +130,7 @@ function make_oidc(oidcConfig)
   local res, err = openidc.authenticate(oidcConfig, ngx.var.request_uri, unauth_action, session_opts)
 
   if not err and res then
-    ngx.log(ngx.DEBUG, "Checking renewal on token: " .. table_to_string(res.access_token))
+    ngx.log(ngx.ERROR, "Checking renewal on token: " .. table_to_string(res.access_token))
 
     local last_timestamp_modified = expiryStore["renewal_" .. res.access_token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']]
 
