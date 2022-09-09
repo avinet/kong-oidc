@@ -10,7 +10,7 @@ local schema = {
 }
 
 local shared = ngx.shared
-local store = shared['oidc_user_refreshed']
+local store = shared['sessions']
 
 return {
   ["/oidc/:user/refreshed"] = {
@@ -18,11 +18,11 @@ return {
     methods = {
 
       GET = function(self)
-        return { status = 200, json = { timestamp = store[self.params.user] } }
+        return { status = 200, json = { timestamp = store["renewal_" .. self.params.user] } }
       end,
 
       POST = function(self)
-        store[self.params.user] = self.params.timestamp
+        store["renewal_" .. self.params.user] = self.params.timestamp
         return { status = 201, json = { success = true } }
       end,
 

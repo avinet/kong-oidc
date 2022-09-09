@@ -5,7 +5,7 @@ local filter = require("kong.plugins.oidc.filter")
 local session = require("kong.plugins.oidc.session")
 
 local shared = ngx.shared
-local expiryStore = shared['oidc_user_refreshed']
+local expiryStore = shared['sessions']
 
 OidcHandler.PRIORITY = 1000
 
@@ -105,7 +105,7 @@ function make_oidc(oidcConfig)
   local res, err = openidc.authenticate(oidcConfig, ngx.var.request_uri, unauth_action, session_opts)
 
   if not err and res then
-    local last_timestamp_modified = expiryStore[res.id_token.id]
+    local last_timestamp_modified = expiryStore["renewal_" .. res.id_token['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']]
 
     if last_timestamp_modified > res.id_token.iat then
       res, err = openidc.force_renew(oidcConfig, session_opts)
